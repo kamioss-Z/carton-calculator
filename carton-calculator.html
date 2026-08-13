@@ -1263,21 +1263,8 @@ function buildTable(cbm,kg,volWt){
 // 3D: Three.js版に置き換え済み（下記IIFEを参照）
 
 // ===== _ls 保存・復元 =====
-// _ls フォールバック（iOS file://対応）
-const _memStore = {};
-const _ls = (function(){
-  try {
-    window.localStorage.setItem('__test__', '1');
-    window.localStorage.removeItem('__test__');
-    return window.localStorage;
-  } catch(e) {
-    return {
-      getItem: function(k){ return _memStore[k] || null; },
-      setItem: function(k,v){ _memStore[k] = v; },
-      removeItem: function(k){ delete _memStore[k]; }
-    };
-  }
-})();
+// localStorage
+var _ls = window.localStorage;
 
 const SAVE_KEY = 'cartonCalcState_v1';
 
@@ -2386,14 +2373,13 @@ function exportExcel(){
 })();
 </script>
 <script>
-// Service Worker登録（PWAオフライン対応）
+// 既存のService Workerを全て削除（キャッシュ問題を防ぐ）
 if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').then(function(reg){
-      console.log('SW registered');
-    }).catch(function(err){
-      console.log('SW registration failed:', err);
-    });
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(r){ r.unregister(); });
+  });
+  caches.keys().then(function(names){
+    names.forEach(function(n){ caches.delete(n); });
   });
 }
 </script>
